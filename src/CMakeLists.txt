@@ -1,0 +1,1 @@
+add_library (Milight crc.c crc.h milight.c milight.h)

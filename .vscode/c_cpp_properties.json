@@ -1,0 +1,56 @@
+{
+    "configurations": [
+        {
+            "name": "Mac",
+            "includePath": ["/usr/include"],
+            "browse" : {
+                "limitSymbolsToIncludedHeaders" : true,
+                "databaseFilename" : ""
+            }
+        },
+        {
+            "name": "Linux",
+            "includePath": ["/usr/include"],
+            "browse" : {
+                "limitSymbolsToIncludedHeaders" : true,
+                "databaseFilename" : ""
+            }
+        },
+        {
+            "name": "Win32",
+            "includePath": [
+                "C:/Users/nzsma/AppData/Local/lxss/rootfs/usr/local/include",
+                "C:/Users/nzsma/AppData/Local/lxss/home/roman/gcc-arm-none-eabi-5.4.1/arm-none-eabi/include",
+                "C:/Users/nzsma/Documents/nRF/examples/peripheral/radio/transmitter/config/transmitter_pca10028",
+                "C:/Users/nzsma/Documents/nRF/examples/peripheral/radio/transmitter/config",
+                "C:/Users/nzsma/Documents/nRF/components/drivers_nrf/common",
+                "C:/Users/nzsma/Documents/nRF/examples/peripheral/radio/transmitter",
+                "C:/Users/nzsma/Documents/nRF/components/libraries/log",
+                "C:/Users/nzsma/Documents/nRF/components/drivers_nrf/radio_config",
+                "C:/Users/nzsma/Documents/nRF/components/drivers_nrf/uart",
+                "C:/Users/nzsma/Documents/nRF/components/libraries/fifo",
+                "C:/Users/nzsma/Documents/nRF/components/device",
+                "C:/Users/nzsma/Documents/nRF/components/libraries/uart",
+                "../config",
+                "C:/Users/nzsma/Documents/nRF/components/toolchain/cmsis/include",
+                "C:/Users/nzsma/Documents/nRF/components/drivers_nrf/hal",
+                "C:/Users/nzsma/Documents/nRF/components",
+                "C:/Users/nzsma/Documents/nRF/components/drivers_nrf/nrf_soc_nosd",
+                "C:/Users/nzsma/Documents/nRF/components/libraries/log/src",
+                "C:/Users/nzsma/Documents/nRF/external/segger_rtt",
+                "C:/Users/nzsma/Documents/nRF/components/toolchain/gcc",
+                "C:/Users/nzsma/Documents/nRF/components/drivers_nrf/delay",
+                "C:/Users/nzsma/Documents/nRF/components/drivers_nrf/gpiote",
+                "C:/Users/nzsma/Documents/nRF/components/libraries/timer",
+                "C:/Users/nzsma/Documents/nRF/components/libraries/button",
+                "C:/Users/nzsma/Documents/nRF/components/libraries/util",
+                "C:/Users/nzsma/Documents/nRF/examples/peripheral/radio/transmitter/../../../bsp",
+                "C:/Users/nzsma/Documents/nRF/components/toolchain"
+            ],
+            "browse" : {
+                "limitSymbolsToIncludedHeaders" : true,
+                "databaseFilename" : ""
+            }
+        }
+    ]
+}
