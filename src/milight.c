@@ -1,13 +1,8 @@
 #include "milight.h"
 #include "crc.h"
 
-static uint8_t counter;
-
-void milight_reset_counter(void){
-    counter=0;
-}
-
-static const uint16_t crc_poly_table_kermit[] = {
+// CRC16 Polynomial lookup table for 0x1021
+static const uint16_t crc_poly_table_1021[] = {
    0x0000, 0x1021, 0x2042, 0x3063, 0x4084, 0x50A5, 0x60C6, 0x70E7, 0x8108, 0x9129, 0xA14A, 0xB16B, 0xC18C, 0xD1AD, 0xE1CE, 0xF1EF,
    0x1231, 0x0210, 0x3273, 0x2252, 0x52B5, 0x4294, 0x72F7, 0x62D6, 0x9339, 0x8318, 0xB37B, 0xA35A, 0xD3BD, 0xC39C, 0xF3FF, 0xE3DE,
    0x2462, 0x3443, 0x0420, 0x1401, 0x64E6, 0x74C7, 0x44A4, 0x5485, 0xA56A, 0xB54B, 0x8528, 0x9509, 0xE5EE, 0xF5CF, 0xC5AC, 0xD58D,
@@ -26,15 +21,17 @@ static const uint16_t crc_poly_table_kermit[] = {
    0xEF1F, 0xFF3E, 0xCF5D, 0xDF7C, 0xAF9B, 0xBFBA, 0x8FD9, 0x9FF8, 0x6E17, 0x7E36, 0x4E55, 0x5E74, 0x2E93, 0x3EB2, 0x0ED1, 0x1EF0 
 };
 
-void write_packet(milight_command *command, uint8_t *packet){
+// CRC16 Polynomial context named KERMIT
+static const crc_context crc_kermit_context = {
+    .init = 0,
+    .table = crc_poly_table_1021,
+    .final_xor = 0,
+    .input_reflected = 1,
+    .result_reflected = 1,
+};
+
+void milight_write_packet(milight_command *command, uint8_t *packet){
     uint16_t crc;
-    crc_context crc_ctx = {
-        .init = 0,
-        .table = crc_poly_table_kermit,
-        .final_xor = 0,
-        .input_reflected = 1,
-        .result_reflected = 1,
-    };
     packet[0] = 0x07; // Length = 7 bytes excluding CRC
 
     packet[1] = (command->id & 0x0F0000) >> 12;
@@ -45,13 +42,50 @@ void write_packet(milight_command *command, uint8_t *packet){
     packet[5] = command->brightness;
     packet[6] = command->code;
 
-    packet[7] = counter++;
+    packet[7] = command->sequence++;
 
     if(command->code == MILIGHT_COMMAND_CODE_DISCO_MODE)
         packet[1] |= command->disco & 0x0F;
     
-    crc = generate_crc16(&crc_ctx, packet, 8);
+    crc = generate_crc16(&crc_kermit_context, packet, 8);
 
     packet[8] = crc & 0xFF;
     packet[9] = crc >> 8;
+}
+
+enum milight_result milight_read_packet(milight_command *command, const uint8_t *packet){
+    if(packet[0] != 0x07)
+        return MILIGHT_RESULT_INVALID_LENGTH;
+
+    if(generate_crc16(&crc_kermit_context, packet, 10) != 0)
+        return MILIGHT_RESULT_CRC_FAILED;
+
+    command->id = 0;
+    command->id |= (packet[1] & 0xF0) << 12; 
+    command->id |= packet[2] << 8;
+    command->id |= packet[3];
+
+    command->color = packet[4];
+    command->brightness = packet[5];
+    command->code = packet[6];
+
+    command->sequence = packet[7];
+
+    if(command->code == MILIGHT_COMMAND_CODE_DISCO_MODE)
+        command->disco = packet[1] & 0x0F;
+
+    return MILIGHT_RESULT_OK;
+}
+
+const char* milight_get_result_msg(const int result){
+    switch(result){
+        case MILIGHT_RESULT_OK:
+            return "Milight: Ok";
+        case MILIGHT_RESULT_CRC_FAILED:
+            return "Milight: CRC Failed";
+        case MILIGHT_RESULT_INVALID_LENGTH:
+            return "Milight: Invalid Length";
+        default:
+            return "Milight: Unknown Result";
+    }
 }

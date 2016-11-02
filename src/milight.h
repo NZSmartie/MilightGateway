@@ -3,6 +3,12 @@
 
 #include <stdint.h>
 
+enum milight_result{
+    MILIGHT_RESULT_OK = 0,
+    MILIGHT_RESULT_CRC_FAILED = 1,
+    MILIGHT_RESULT_INVALID_LENGTH  = 2,
+};
+
 enum milight_command_code{
     MILIGHT_COMMAND_CODE_NONE         = 0x00,
     MILIGHT_COMMAND_CODE_ON           = 0x01,
@@ -43,8 +49,13 @@ typedef struct{
     uint8_t brightness;
     enum milight_command_code code;
     enum milight_disco_mode disco;
+    uint8_t sequence;
 }milight_command;
 
-void write_packet(milight_command *command, uint8_t *packet);
+void milight_write_packet(milight_command *command, uint8_t *packet);
+
+enum milight_result milight_read_packet(milight_command *command, const uint8_t *packet);
+
+const char* milight_get_result_msg(const int result);
 
 #endif /* MILIGHT_MILIGHT_H_ */ 

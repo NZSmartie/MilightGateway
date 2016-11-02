@@ -1,6 +1,7 @@
 # Milight Gateway with nRF51
 
 *Originally based on the radio transmitter example, from nRF5 SDK 12.1*
+
 This project is an attempt at controlling Milights using a easy to get nRF51 dongle.
 
 Currently a test project and doesn't perform anyhting interesting apart from successful unit tests. 
