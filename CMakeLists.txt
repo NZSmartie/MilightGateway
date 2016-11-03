@@ -10,3 +10,5 @@ enable_testing()
 add_test(NAME TestCRC COMMAND TestCRC)
 add_test(NAME TestMilight COMMAND TestMilight)
 set_tests_properties(TestMilight PROPERTIES DEPENDS "TestCRC")
+
+add_test(NAME TestUtil COMMAND TestUtil)

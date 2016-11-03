@@ -12,3 +12,6 @@ target_link_libraries(TestCRC ${LIBS})
 
 add_executable(TestMilight milight.c)
 target_link_libraries(TestMilight ${LIBS})
+
+add_executable(TestUtil util.c)
+target_link_libraries(TestUtil ${LIBS})
