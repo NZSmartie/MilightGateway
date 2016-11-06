@@ -44,7 +44,7 @@
 
 static uint32_t button_state;
 static uint8_t packet[12] = {0};
-static uint8_t repeats = 10; 
+static uint8_t repeats = 40; 
 
 void uart_error_handle(app_uart_evt_t * p_event)
 {
@@ -201,6 +201,12 @@ int main(void)
                                 packet[0], packet[1], packet[2], packet[3], packet[4], packet[5]);
                 NRF_LOG_RAW_INFO(" 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X\r\n", 
                                 packet[6], packet[7], packet[8], packet[9], packet[10], packet[11]);
+
+                NRF_RADIO->FREQUENCY = 11UL;
+                send_packet();
+                NRF_RADIO->FREQUENCY = 42UL;
+                send_packet();
+                NRF_RADIO->FREQUENCY = 73UL;
                 send_packet();
             }
             button_state = 0;
