@@ -103,7 +103,7 @@ void radio_configure()
 {
     // Radio config
     NRF_RADIO->TXPOWER   = (RADIO_TXPOWER_TXPOWER_Pos4dBm << RADIO_TXPOWER_TXPOWER_Pos);
-    NRF_RADIO->FREQUENCY = 7UL;  // Frequency bin 7, 2407MHz
+    NRF_RADIO->FREQUENCY = RADIO_CHANNEL;  
     NRF_RADIO->MODE      = (RADIO_MODE_MODE_Nrf_1Mbit << RADIO_MODE_MODE_Pos);
 
     // Radio address config
@@ -120,7 +120,7 @@ void radio_configure()
       | ((uint32_t)0xC4 << 0); // Prefix byte of address 4
 
     NRF_RADIO->BASE0 = 0x147AAAAAUL;  // Base address for prefix 0 converted to nRF24L series format
-    NRF_RADIO->BASE1 = 0x89ABCDEFUL;  // Base address for prefix 1-7 converted to nRF24L series format
+    NRF_RADIO->BASE1 = 0x147AAAAAUL;  // Base address for prefix 1-7 converted to nRF24L series format
 
     NRF_RADIO->TXADDRESS   = 0x00UL;  // Set device address 0 to use when transmitting
     NRF_RADIO->RXADDRESSES = 0x00UL;  // Enable device address 0 to use to select which addresses to receive

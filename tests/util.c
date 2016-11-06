@@ -53,6 +53,17 @@ START_TEST(test_shift_swap_nibbles)
         "\n\t  actual: 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X", 
         expected[0], expected[1], expected[2], expected[3], expected[4], expected[5], expected[6], expected[7], expected[8], expected[9], expected[10], 
         actual[0], actual[1], actual[2], actual[3], actual[4], actual[5], actual[6], actual[7], actual[8], actual[9], actual[10]);
+
+    // Run the same test, this time, mutating the input
+    memcpy(actual, (uint8_t[]){0x07, 0xb0, 0xf2, 0xea, 0x76, 0x10, 0x01, 0x8a, 0x22, 0xc5, 0x00}, 11);
+    shift_swap_nibbles(actual, actual, 10);
+    
+    ck_assert_msg(
+        memcmp(expected, actual, 11) == 0, 
+        "\n\texpected: 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X"
+        "\n\t  actual: 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X", 
+        expected[0], expected[1], expected[2], expected[3], expected[4], expected[5], expected[6], expected[7], expected[8], expected[9], expected[10], 
+        actual[0], actual[1], actual[2], actual[3], actual[4], actual[5], actual[6], actual[7], actual[8], actual[9], actual[10]);
 }
 END_TEST
 

@@ -11,11 +11,11 @@ void shift_nibbles(uint8_t *sPtr, uint8_t *dPtr, const size_t len){
 }
 
 void shift_swap_nibbles(uint8_t *sPtr, uint8_t *dPtr, const size_t len){
-    uint8_t spare = 0;
-    *dPtr = 0;
+    uint8_t spare = 0, subject;
     for(size_t i = 0; i < len; i++){
-        *dPtr++ = spare | (*sPtr << 4);
-        spare = *sPtr++ >> 4;
+        subject = *sPtr++;
+        *dPtr++ = spare | ((subject & 0x0F) << 4);
+        spare = subject >> 4;
     }
     *dPtr = spare;
 }

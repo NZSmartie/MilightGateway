@@ -2,7 +2,7 @@ PROJECT_NAME     := transmitter_pca10028
 TARGETS          := nrf51822_xxaa
 OUTPUT_DIRECTORY := _build
 
-SDK_ROOT := ../../../
+SDK_ROOT := ../../../../
 PROJ_DIR := ../
 
 $(OUTPUT_DIRECTORY)/nrf51822_xxaa.out: \
@@ -25,6 +25,9 @@ SRC_FILES += \
   $(SDK_ROOT)/components/drivers_nrf/uart/nrf_drv_uart.c \
   $(SDK_ROOT)/examples/bsp/bsp.c \
   $(PROJ_DIR)/main.c \
+  $(PROJ_DIR)/milight.c \
+  $(PROJ_DIR)/crc.c \
+  $(PROJ_DIR)/util.c \
   $(PROJ_DIR)/radio/config.c \
   $(SDK_ROOT)/external/segger_rtt/RTT_Syscalls_GCC.c \
   $(SDK_ROOT)/external/segger_rtt/SEGGER_RTT.c \
@@ -79,6 +82,8 @@ CFLAGS += -ffunction-sections -fdata-sections -fno-strict-aliasing
 CFLAGS += -fno-builtin --short-enums 
 # generate dependency output file
 CFLAGS += -MP -MD
+# No not warn on unused functions
+CFLAGS += -Wno-unused-function
 
 # C++ flags common to all targets
 CXXFLAGS += \

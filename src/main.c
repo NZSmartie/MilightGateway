@@ -36,10 +36,15 @@
 #include "nrf_log.h"
 #include "nrf_log_ctrl.h"
 
+#include "milight.h"
+#include "util.h"
+
 #define APP_TIMER_PRESCALER      0                           /**< Value of the RTC1 PRESCALER register. */
 #define APP_TIMER_OP_QUEUE_SIZE  2                           /**< Size of timer operation queues. */
 
-static uint32_t                   packet;                    /**< Packet to transmit. */
+static uint32_t button_state;
+static uint8_t packet[12] = {0};
+static uint8_t repeats = 10; 
 
 void uart_error_handle(app_uart_evt_t * p_event)
 {
@@ -47,37 +52,28 @@ void uart_error_handle(app_uart_evt_t * p_event)
 }
 
 
-/**@brief Function for sending packet.
+/**@brief Function for sending button_state.
  */
 void send_packet()
 {
-    // send the packet:
     NRF_RADIO->EVENTS_READY = 0U;
     NRF_RADIO->TASKS_TXEN   = 1;
 
-    while (NRF_RADIO->EVENTS_READY == 0U)
-    {
-        // wait
-    }
-    NRF_RADIO->EVENTS_END  = 0U;
-    NRF_RADIO->TASKS_START = 1U;
+    while (NRF_RADIO->EVENTS_READY == 0U);
+    
+    // Transmit the same packet over and over
+    for(uint8_t c = 0; c < repeats; c++){
+        NRF_RADIO->EVENTS_END  = 0U;
+        NRF_RADIO->TASKS_START = 1U;
 
-    while (NRF_RADIO->EVENTS_END == 0U)
-    {
-        // wait
+        while (NRF_RADIO->EVENTS_END == 0U);
     }
-
-    uint32_t err_code = bsp_indication_text_set(BSP_INDICATE_SENT_OK, "The packet was sent\r\n");
-    APP_ERROR_CHECK(err_code);
 
     NRF_RADIO->EVENTS_DISABLED = 0U;
     // Disable radio
     NRF_RADIO->TASKS_DISABLE = 1U;
 
-    while (NRF_RADIO->EVENTS_DISABLED == 0U)
-    {
-        // wait
-    }
+    while (NRF_RADIO->EVENTS_DISABLED == 0U);
 }
 
 
@@ -89,22 +85,15 @@ void bsp_evt_handler(bsp_event_t evt)
     switch (evt)
     {
         case BSP_EVENT_KEY_0:
-             /* fall through */
         case BSP_EVENT_KEY_1:
-             /* fall through */
         case BSP_EVENT_KEY_2:
-             /* fall through */
         case BSP_EVENT_KEY_3:
-             /* fall through */
         case BSP_EVENT_KEY_4:
-             /* fall through */
         case BSP_EVENT_KEY_5:
-             /* fall through */
         case BSP_EVENT_KEY_6:
-             /* fall through */
         case BSP_EVENT_KEY_7:
             // get actual button state
-            err_code = bsp_buttons_state_get(&packet);
+            err_code = bsp_buttons_state_get(&button_state);
             APP_ERROR_CHECK(err_code);
             break;
         default:
@@ -146,6 +135,13 @@ void clock_initialization()
  */
 int main(void)
 {
+    milight_command mi_cmd = {
+        .id = 0x000BF2EA,
+        .brightness = 0x90,
+        .color = 0x35,
+        .code = MILIGHT_COMMAND_CODE_ON,
+        .sequence = 0
+    };
     uint32_t err_code = NRF_SUCCESS;
 
     clock_initialization();
@@ -163,18 +159,51 @@ int main(void)
     radio_configure();
 
     // Set payload pointer
-    NRF_RADIO->PACKETPTR = (uint32_t)&packet;
+    NRF_RADIO->PACKETPTR = (uint32_t)packet;
 
     err_code = bsp_indication_text_set(BSP_INDICATE_USER_STATE_OFF, "Press Any Button\r\n");
     APP_ERROR_CHECK(err_code);
 
     while (true)
     {
-        if (packet != 0)
+        if (button_state != 0)
         {
-            send_packet();
-            NRF_LOG_INFO("The contents of the package was %u\r\n", (unsigned int)packet);
-            packet = 0;
+            if(button_state == 0x01){
+                // Turn on all Lights to White
+                mi_cmd.code = MILIGHT_COMMAND_CODE_ON | MILIGHT_COMMAND_ALT;
+            }else if(button_state == 0x02){
+                // Cycle colours
+                mi_cmd.color += 10;
+                mi_cmd.code = MILIGHT_COMMAND_CODE_COLOR;
+            }else if(button_state == 0x04){
+                // Turn off all lights
+                mi_cmd.code = MILIGHT_COMMAND_CODE_OFF;
+            }else if(button_state == 0x08){
+                // Turn on all lights
+                mi_cmd.code = MILIGHT_COMMAND_CODE_ON;
+            }else{
+                // don't do anyhting
+                mi_cmd.code = MILIGHT_COMMAND_CODE_NONE;
+            }
+
+            if(mi_cmd.code != MILIGHT_COMMAND_CODE_NONE){
+                milight_write_packet(&mi_cmd, &packet[1]);
+                NRF_LOG_INFO("Milight Packet: 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X", 
+                                packet[0], packet[1], packet[2], packet[3], packet[4], packet[5]);
+                NRF_LOG_RAW_INFO(" 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X\r\n",
+                                packet[6], packet[7], packet[8], packet[9], packet[10]);
+                packet[0] = 0x00;
+                shift_swap_nibbles(packet,packet, 11);
+                packet[0] = 0x25;
+                packet[1] |= 0x05;
+                packet[11] |= 0xF0;
+                NRF_LOG_INFO("Encoded Packet: 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X", 
+                                packet[0], packet[1], packet[2], packet[3], packet[4], packet[5]);
+                NRF_LOG_RAW_INFO(" 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X\r\n", 
+                                packet[6], packet[7], packet[8], packet[9], packet[10], packet[11]);
+                send_packet();
+            }
+            button_state = 0;
         }
         NRF_LOG_FLUSH();
         __WFE();
